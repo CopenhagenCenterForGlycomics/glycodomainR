@@ -38,11 +38,11 @@ get_session_id = function() {
 }
 install_packages = function() {
   session_id = get_session_id()
-  install.packages('gatordata',repos=httr::modify_url(url=server_endpoint, path=c('api','repository','token',session_id)))
+  utils::install.packages('gatordata',repos=httr::modify_url(url=server_endpoint, path=c('api','repository','token',session_id)))
 }
 list_packages = function() {
   session_id = get_session_id()
-  available.packages(httr::modify_url(url=server_endpoint, path=c('api','repository','token',session_id,'src','contrib')))
+  utils::available.packages(httr::modify_url(url=server_endpoint, path=c('api','repository','token',session_id,'src','contrib')))
 }
 list_package_urls = function() {
   files = list_packages()[,c('File','Repository')]
@@ -50,7 +50,7 @@ list_package_urls = function() {
 }
 update_packages = function() {
   session_id = get_session_id()
-  update.packages(repos=httr::modify_url(url=server_endpoint, path=c('api','repository','token',session_id)))
+  utils::update.packages(repos=httr::modify_url(url=server_endpoint, path=c('api','repository','token',session_id)))
 }
 
 auto_update = function() {
