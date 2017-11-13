@@ -29,7 +29,7 @@ get_session_id = function() {
   req <- httr::POST(url,
               httr::add_headers(
                 "Authorization" = paste('Bearer',httr::content(token_data)$access_token),
-                "x-api-key" = keyring::key_get('gatordata.client_id')
+                "x-api-key" = keyring::key_get('gatordata.client_id',server_endpoint)
               ))
 
   session_id = httr::content(req)$session_id
