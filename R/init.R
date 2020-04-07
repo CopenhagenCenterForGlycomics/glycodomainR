@@ -2,6 +2,11 @@
 
 initialize = function() {
   server_endpoint = ifelse('gatordata.server' %in% names(options()), getOption('gatordata.server'), 'https://glycodomain.glycomics.ku.dk')
+
+  if (('vaultr' %in% rownames(installed.packages())) && (Sys.getenv('VAULT_TOKEN') != "") ) {
+    return()
+  }
+
   stored_client_ids = keyring::key_list('gatordata.client_id')$username
   stored_client_secrets = keyring::key_list('gatordata.client_secret')$username
   if (! server_endpoint %in% stored_client_ids) {

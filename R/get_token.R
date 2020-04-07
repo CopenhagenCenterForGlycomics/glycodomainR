@@ -1,5 +1,25 @@
 library(httr)
 
+get_access_token_vault = function(endpoint) {
+  vault <- vaultr::vault_client(login="token")
+  wanted_token=vault$read(paste('oauth2/',endpoint,'/creds/fullaccess',sep='') )
+  if ( class(wanted_token) == 'list' ) {
+    return ( wanted_token[[1]] );
+  }
+}
+
+get_access_token_direct = function(endpoint) {
+    json_body = jsonlite::toJSON(list(
+      client_id=keyring::key_get('gatordata.client_id',server_endpoint),
+      client_secret=keyring::key_get('gatordata.client_secret',server_endpoint),
+      audience=server_config$API_AUDIENCE,
+      grant_type='client_credentials'
+    ),auto_unbox = T)
+
+    token_data = httr::POST(gatordata_endpoint$access,body=json_body, httr::add_headers("Content-Type" = "application/json"))
+    return ( token_data )
+}
+
 get_session_id = function() {
   server_endpoint = ifelse('gatordata.server' %in% names(options()), getOption('gatordata.server'), 'https://glycodomain.glycomics.ku.dk')
 
@@ -9,17 +29,15 @@ get_session_id = function() {
     authorize = NULL,
     access    = paste('https://',server_config$AUTH0_DOMAIN,'.auth0.com/oauth/token',sep='')
   )
+  client_id = ''
 
-  json_body = jsonlite::toJSON(list(
-    client_id=keyring::key_get('gatordata.client_id',server_endpoint),
-    client_secret=keyring::key_get('gatordata.client_secret',server_endpoint),
-    audience=server_config$API_AUDIENCE,
-    grant_type='client_credentials'
-  ),auto_unbox = T)
-
-
-
-  token_data = httr::POST(gatordata_endpoint$access,body=json_body, httr::add_headers("Content-Type" = "application/json"))
+  if (('vaultr' %in% rownames(installed.packages())) && (Sys.getenv('VAULT_TOKEN') != "") ) {
+    token_data = get_access_token_vault(gsub('https://','',server_endpoint,fixed=T))
+    client_id = Sys.getenv('GLYCODOMAINR_CLIENT_ID')
+  } else {
+    token_data = httr::content(get_access_token_direct(server_endpoint))$access_token
+    client_id = keyring::key_get('gatordata.client_id',server_endpoint)
+  }
 
   url <- httr::modify_url(
     url = server_endpoint,
@@ -28,8 +46,8 @@ get_session_id = function() {
 
   req <- httr::POST(url,
               httr::add_headers(
-                "Authorization" = paste('Bearer',httr::content(token_data)$access_token),
-                "x-api-key" = keyring::key_get('gatordata.client_id',server_endpoint)
+                "Authorization" = paste('Bearer',token_data),
+                "x-api-key" = client_id
               ))
 
   session_id = httr::content(req)$session_id
