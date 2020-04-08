@@ -1,5 +1,3 @@
-library(httr)
-
 get_access_token_vault = function(endpoint) {
   vault <- vaultr::vault_client(login="token")
   wanted_token=vault$read(paste('oauth2/',endpoint,'/creds/fullaccess',sep='') )
@@ -53,12 +51,16 @@ get_session_id = function() {
   session_id = httr::content(req)$session_id
   return (session_id)
 }
+
+#' @export
 install_packages = function() {
   server_endpoint = ifelse('gatordata.server' %in% names(options()), getOption('gatordata.server'), 'https://glycodomain.glycomics.ku.dk')
 
   session_id = get_session_id()
   utils::install.packages('gatordata',repos=httr::modify_url(url=server_endpoint, path=c('api','repository','token',session_id)))
 }
+
+#' @export
 list_packages = function() {
   server_endpoint = ifelse('gatordata.server' %in% names(options()), getOption('gatordata.server'), 'https://glycodomain.glycomics.ku.dk')
 
@@ -69,6 +71,8 @@ list_package_urls = function() {
   files = list_packages()[,c('File','Repository')]
   paste(files[,2],files[,1],sep='/')
 }
+
+#' @export
 update_packages = function() {
   server_endpoint = ifelse('gatordata.server' %in% names(options()), getOption('gatordata.server'), 'https://glycodomain.glycomics.ku.dk')
 
@@ -76,6 +80,7 @@ update_packages = function() {
   utils::update.packages(repos=httr::modify_url(url=server_endpoint, path=c('api','repository','token',session_id)))
 }
 
+#' @export
 auto_update = function() {
   initialize()
   update_packages()
