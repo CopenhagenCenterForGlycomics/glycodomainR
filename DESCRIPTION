@@ -1,6 +1,6 @@
 Package: glycodomainR
 Title: Load dataset packages from the GlycoDomainViewer
-Version: 0.1.4
+Version: 
 Authors@R: person("Hiren", "Joshi", email = "joshi@sund.ku.dk", role = c("aut", "cre"))
 Description: Load dataset packages from the GlycoDomainViewer.
 Depends:
