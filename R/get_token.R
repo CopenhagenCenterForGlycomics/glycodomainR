@@ -85,3 +85,23 @@ auto_update = function() {
   initialize()
   update_packages()
 }
+
+#' @export
+package_snapshot = function() {
+  current_packages = installed.packages()
+  package_version_data = current_packages[grepl('^gator',current_packages[,'Package']),c('Package','Version')]
+  File=apply(package_version_data,1,function(x) paste(paste(sub('gator.','',x['Package']),x['Version'],sep='_'),'RData.tar.gz',sep='.'))
+  `rownames<-`(cbind(package_version_data,File),NULL)
+}
+
+#' @export
+download_package_snapshot = function(folder) {
+  ifelse(!dir.exists(file.path(folder)), dir.create(file.path(folder)), FALSE)
+  server_endpoint = ifelse('gatordata.server' %in% names(options()), getOption('gatordata.server'), 'https://glycodomain.glycomics.ku.dk')
+  token = get_session_id()
+  packages_to_download = package_snapshot()[,'File']
+  for (package in packages_to_download) {
+    download.file( paste(server_endpoint,'api/repository/token',token,'src/contrib',package,sep='/'), file.path(folder,package) )
+  }
+}
+
